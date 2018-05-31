@@ -239,10 +239,11 @@ void Accumulate(Torus* tlwe,
 }
 
 __global__
-void __Bootstrap__(Torus* out, Torus* in, Torus mu,
+void __Bootstrap__(Torus* out, Torus* in0, Torus* in1, Torus mu,
                    FFP* bk,
                    Torus* ksk,
-                   CuNTTHandler<> ntt) {
+                   CuNTTHandler<> ntt,
+                   GateType* gate) {
 //  Assert(bk.k() == 1);
 //  Assert(bk.l() == 2);
 //  Assert(bk.n() == 1024);
@@ -253,7 +254,7 @@ void __Bootstrap__(Torus* out, Torus* in, Torus mu,
 
   // test vector
   // acc.a = 0; acc.b = vec(mu) * x ^ (in.b()/2048)
-  register int32_t bar = 2048 - ModSwitch2048(in[500]);
+  register int32_t bar = 2048 - ModSwitch2048(gate->b(in0[500], in1[500]));
   register uint32_t tid = ThisThreadRankInBlock();
   register uint32_t bdim = ThisBlockSize();
   register uint32_t cmp, neg, pos;
@@ -273,7 +274,7 @@ void __Bootstrap__(Torus* out, Torus* in, Torus mu,
   // accumulate
   #pragma unroll
   for (int i = 0; i < 500; i ++) { // 500 iterations
-    bar = ModSwitch2048(in[i]);
+    bar = ModSwitch2048(gate->a(in0[i], in1[i]));
     Accumulate(tlwe, sh, sh, bar, bk + (i << 13), ntt);
   }
 
@@ -331,18 +332,29 @@ void __NandBootstrap__(Torus* out, Torus* in0, Torus* in1, Torus mu, Torus fix,
   KeySwitch<lwe_n, tlwe_n, ks_bits, ks_size>(out, tlwe, ksk);
 }
 
+static int count = 0;
+
 void Bootstrap(LWESample* out,
-               LWESample* in,
+               LWESample* in0,
+               LWESample* in1,
                Torus mu,
+               GateType* gate,
                cudaStream_t st) {
   dim3 grid(1);
   dim3 block(512);
-  __Bootstrap__<<<grid, block, 0, st>>>(out->data(), in->data(), mu,
-      bk_ntt->data(), ksk_dev->data(), *ntt_handler);
+  if (count == 0) {
+    cudaFuncAttributes attr;
+    cudaFuncGetAttributes(&attr, __Bootstrap__);
+    std::cout<< attr.numRegs << " regs\t" << attr.localSizeBytes << " Bytes\t";
+    cudaFuncGetAttributes(&attr, __NandBootstrap__);
+    std::cout<< attr.numRegs << " regs\t" << attr.localSizeBytes << " Bytes\t";
+    std::cout<< std::endl;
+    count ++;
+  }
+  __Bootstrap__<<<grid, block, 0, st>>>(out->data(), in0->data(), in1->data(),
+      mu, bk_ntt->data(), ksk_dev->data(), *ntt_handler, gate);
   CuCheckError();
 }
-
-static int count = 0;
 
 void NandBootstrap(LWESample* out,
                LWESample* in0,

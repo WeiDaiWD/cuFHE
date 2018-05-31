@@ -52,6 +52,23 @@ inline void CtxtCopyD2H(const Ctxt& c, Stream st) {
                   st.st());
 }
 
+template <int32_t mu, int32_t space>
+constexpr Torus ModSwitchToTorusConst() {
+  //static const uint64_t gap = ((0x1UL << 63) / space) * 2;
+  return int32_t((uint64_t)(mu * (((0x1UL << 63) / space) * 2)) >> 32);
+}
+
+class NandGate: public GateType {
+ public:
+  __host__ __device__ inline NandGate() {}
+  __device__ inline Torus a(Torus x, Torus y) override { return 0-x-y; }
+  __device__ inline Torus b(Torus x, Torus y) override { return kFix + a(x, y); }
+ private:
+  static const Torus kFix = ModSwitchToTorusConst<1, 8>();
+};
+
+GateType* nand_gate = new NandGate();
+
 void Nand(Ctxt& out,
           const Ctxt& in0,
           const Ctxt& in1,
@@ -68,10 +85,11 @@ void Nand(Ctxt& out,
   //Bootstrap(out.lwe_sample_, out.lwe_sample_, mu, st.st());
   //CtxtCopyH2D(out, st);
   //Bootstrap(out.lwe_sample_device_, out.lwe_sample_device_, mu, st.st());
-  NandBootstrap(out.lwe_sample_device_, in0.lwe_sample_device_, in1.lwe_sample_device_, mu, fix, st.st());
+  //NandBootstrap(out.lwe_sample_device_, in0.lwe_sample_device_, in1.lwe_sample_device_, mu, fix, st.st());
+  Bootstrap(out.lwe_sample_device_, in0.lwe_sample_device_, in1.lwe_sample_device_, mu, nand_gate, st.st());
   CtxtCopyD2H(out, st);
 }
-
+/*
 void Or(Ctxt& out,
         const Ctxt& in0,
         const Ctxt& in1,
@@ -150,5 +168,5 @@ void Copy(Ctxt& out,
   for (int i = 0; i <= in.lwe_sample_->n(); i ++)
     out.lwe_sample_->data()[i] = in.lwe_sample_->data()[i];
 }
-
+*/
 } // namespace cufhe

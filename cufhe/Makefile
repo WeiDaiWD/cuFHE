@@ -3,7 +3,7 @@ CC = g++
 CU = nvcc
 ## Flags
 FLAGS = -std=c++11 -O3 -w
-CU_FLAGS = #-gencode=arch=compute_70,code=sm_70 -gencode=arch=compute_70,code=compute_70
+CU_FLAGS = --maxrregcount 128#-gencode=arch=compute_70,code=sm_70 -gencode=arch=compute_70,code=compute_70
 ##-Wno-deprecated-gpu-targets
 INC = -I./
 ## Python header files

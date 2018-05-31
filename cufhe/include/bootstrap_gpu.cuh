@@ -32,9 +32,18 @@ void KeySwitchingKeyToDevice(const KeySwitchingKey* ksk);
 void DeleteBootstrappingKeyNTT();
 void DeleteKeySwitchingKey();
 
+class GateType {
+ public:
+  __host__ __device__ inline GateType() {};
+  virtual __device__ inline Torus a(Torus x, Torus y) { return 0; }
+  virtual __device__ inline Torus b(Torus x, Torus y) { return 0; }
+};
+
 void Bootstrap(LWESample* out,
-               LWESample* in,
+               LWESample* in0,
+               LWESample* in1,
                Torus mu,
+               GateType* gate,
                cudaStream_t st = 0);
 
 void NandBootstrap(LWESample* out,
