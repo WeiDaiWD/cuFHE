@@ -66,8 +66,6 @@ class NandGate {
   static const Torus kFix = ModSwitchToTorusConst<1, 8>();
 };
 
-GateType* nand_gate = new NandGate();
-
 void Nand(Ctxt& out,
           const Ctxt& in0,
           const Ctxt& in1,
