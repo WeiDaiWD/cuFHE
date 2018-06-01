@@ -32,7 +32,7 @@ void KeySwitchingKeyToDevice(const KeySwitchingKey* ksk);
 void DeleteBootstrappingKeyNTT();
 void DeleteKeySwitchingKey();
 
-template <typename GateType>
+extern template <typename GateType>
 void Bootstrap(LWESample* out,
                LWESample* in0,
                LWESample* in1,

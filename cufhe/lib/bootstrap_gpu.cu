@@ -335,7 +335,7 @@ void __NandBootstrap__(Torus* out, Torus* in0, Torus* in1, Torus mu, Torus fix,
 static int count = 0;
 
 template <typename GateType>
-void Bootstrap<GateType>(LWESample* out,
+void Bootstrap(LWESample* out,
                LWESample* in0,
                LWESample* in1,
                Torus mu,
