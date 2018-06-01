@@ -58,10 +58,10 @@ constexpr Torus ModSwitchToTorusConst() {
   return int32_t((uint64_t(mu) * ((0x1UL << 63) / space * 2)) >> 32);
 }
 
-class NandGate: public GateType {
+class NandGate {
  public:
-  __device__ inline Torus a(Torus x, Torus y) { return 0-x-y; }
-  __device__ inline Torus b(Torus x, Torus y) { return kFix+a(x, y); }
+  static __device__ inline Torus a(Torus x, Torus y) { return 0-x-y; }
+  static __device__ inline Torus b(Torus x, Torus y) { return kFix+a(x, y); }
  //private:
   static const Torus kFix = ModSwitchToTorusConst<1, 8>();
 };
@@ -87,7 +87,7 @@ void Nand(Ctxt& out,
   //CtxtCopyH2D(out, st);
   //Bootstrap(out.lwe_sample_device_, out.lwe_sample_device_, mu, st.st());
   //NandBootstrap(out.lwe_sample_device_, in0.lwe_sample_device_, in1.lwe_sample_device_, mu, fix, st.st());
-  Bootstrap(out.lwe_sample_device_, in0.lwe_sample_device_, in1.lwe_sample_device_, mu, nand_gate, st.st());
+  Bootstrap<NandGate>(out.lwe_sample_device_, in0.lwe_sample_device_, in1.lwe_sample_device_, mu, st.st());
   CtxtCopyD2H(out, st);
 }
 /*

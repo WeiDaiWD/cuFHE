@@ -238,12 +238,12 @@ void Accumulate(Torus* tlwe,
   __syncthreads(); // must
 }
 
+template <typename GateType>
 __global__
 void __Bootstrap__(Torus* out, Torus* in0, Torus* in1, Torus mu,
                    FFP* bk,
                    Torus* ksk,
-                   CuNTTHandler<> ntt,
-                   GateType& gate) {
+                   CuNTTHandler<> ntt) {
 //  Assert(bk.k() == 1);
 //  Assert(bk.l() == 2);
 //  Assert(bk.n() == 1024);
@@ -254,7 +254,7 @@ void __Bootstrap__(Torus* out, Torus* in0, Torus* in1, Torus mu,
 
   // test vector
   // acc.a = 0; acc.b = vec(mu) * x ^ (in.b()/2048)
-  register int32_t bar = 2048 - ModSwitch2048(gate.b(in0[500], in1[500]));
+  register int32_t bar = 2048 - ModSwitch2048(GateType::b(in0[500], in1[500]));
   register uint32_t tid = ThisThreadRankInBlock();
   register uint32_t bdim = ThisBlockSize();
   register uint32_t cmp, neg, pos;
@@ -274,7 +274,7 @@ void __Bootstrap__(Torus* out, Torus* in0, Torus* in1, Torus mu,
   // accumulate
   #pragma unroll
   for (int i = 0; i < 500; i ++) { // 500 iterations
-    bar = ModSwitch2048(gate.a(in0[i], in1[i]));
+    bar = ModSwitch2048(GateType::a(in0[i], in1[i]));
     Accumulate(tlwe, sh, sh, bar, bk + (i << 13), ntt);
   }
 
@@ -334,25 +334,25 @@ void __NandBootstrap__(Torus* out, Torus* in0, Torus* in1, Torus mu, Torus fix,
 
 static int count = 0;
 
-void Bootstrap(LWESample* out,
+template <typename GateType>
+void Bootstrap<GateType>(LWESample* out,
                LWESample* in0,
                LWESample* in1,
                Torus mu,
-               GateType* gate,
                cudaStream_t st) {
   dim3 grid(1);
   dim3 block(512);
   if (count == 0) {
     cudaFuncAttributes attr;
-    cudaFuncGetAttributes(&attr, __Bootstrap__);
+    cudaFuncGetAttributes(&attr, __Bootstrap__<GateType>);
     std::cout<< attr.numRegs << " regs\t" << attr.localSizeBytes << " Bytes\t";
     cudaFuncGetAttributes(&attr, __NandBootstrap__);
     std::cout<< attr.numRegs << " regs\t" << attr.localSizeBytes << " Bytes\t";
     std::cout<< std::endl;
     count ++;
   }
-  __Bootstrap__<<<grid, block, 0, st>>>(out->data(), in0->data(), in1->data(),
-      mu, bk_ntt->data(), ksk_dev->data(), *ntt_handler, *gate);
+  __Bootstrap__<GateType><<<grid, block, 0, st>>>(out->data(), in0->data(), in1->data(),
+      mu, bk_ntt->data(), ksk_dev->data(), *ntt_handler);
   CuCheckError();
 }
 
