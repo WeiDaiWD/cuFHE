@@ -243,7 +243,7 @@ void __Bootstrap__(Torus* out, Torus* in0, Torus* in1, Torus mu,
                    FFP* bk,
                    Torus* ksk,
                    CuNTTHandler<> ntt,
-                   const GateType& gate) {
+                   GateType& gate) {
 //  Assert(bk.k() == 1);
 //  Assert(bk.l() == 2);
 //  Assert(bk.n() == 1024);
