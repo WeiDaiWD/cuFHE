@@ -62,7 +62,7 @@ class NandGate: public GateType {
  public:
   __device__ inline Torus a(Torus x, Torus y) { return 0-x-y; }
   __device__ inline Torus b(Torus x, Torus y) { return kFix+a(x, y); }
- private:
+ //private:
   static const Torus kFix = ModSwitchToTorusConst<1, 8>();
 };
 
