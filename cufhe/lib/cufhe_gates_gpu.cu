@@ -72,8 +72,6 @@ void Nand(Ctxt& out,
           Stream st) {
   static const Torus mu = ModSwitchToTorus(1, 8);
   static const Torus fix = ModSwitchToTorus(1, 8);
-  if (fix != ((NandGate*)nand_gate)->kFix)
-    std::cout<< "wrong\t" << fix << "\t" << ((NandGate*)nand_gate)->kFix <<std::endl;
 /*  for (int i = 0; i <= in0.lwe_sample_->n(); i ++)
     out.lwe_sample_->data()[i] = 0 - in0.lwe_sample_->data()[i]
                                    - in1.lwe_sample_->data()[i];
