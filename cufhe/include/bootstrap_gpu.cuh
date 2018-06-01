@@ -34,9 +34,8 @@ void DeleteKeySwitchingKey();
 
 class GateType {
  public:
-  __host__ __device__ inline GateType() {};
-  virtual __device__ inline Torus a(Torus x, Torus y) { return 0; }
-  virtual __device__ inline Torus b(Torus x, Torus y) { return 0; }
+  virtual __device__ inline Torus a(Torus x, Torus y) = 0;
+  virtual __device__ inline Torus b(Torus x, Torus y) = 0;
 };
 
 void Bootstrap(LWESample* out,
