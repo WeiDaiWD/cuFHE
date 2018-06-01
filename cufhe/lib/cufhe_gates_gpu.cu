@@ -55,7 +55,7 @@ inline void CtxtCopyD2H(const Ctxt& c, Stream st) {
 template <int32_t mu, int32_t space>
 constexpr Torus ModSwitchToTorusConst() {
   //static const uint64_t gap = ((0x1UL << 63) / space) * 2;
-  return int32_t(uint64_t(mu) * ((0x1UL << 63) / space * 2)) >> 32);
+  return int32_t((uint64_t(mu) * ((0x1UL << 63) / space * 2)) >> 32);
 }
 
 class NandGate: public GateType {
@@ -74,8 +74,8 @@ void Nand(Ctxt& out,
           Stream st) {
   static const Torus mu = ModSwitchToTorus(1, 8);
   static const Torus fix = ModSwitchToTorus(1, 8);
-  if (fix != nand_gate->kFix)
-    std::cout<< "wrong\t" << fix << "\t" << (NandGate*)nand_gate->kFix <<std::endl;
+  if (fix != ((NandGate*)nand_gate)->kFix)
+    std::cout<< "wrong\t" << fix << "\t" << ((NandGate*)nand_gate)->kFix <<std::endl;
 /*  for (int i = 0; i <= in0.lwe_sample_->n(); i ++)
     out.lwe_sample_->data()[i] = 0 - in0.lwe_sample_->data()[i]
                                    - in1.lwe_sample_->data()[i];
